@@ -20,7 +20,7 @@ struct RecordingView: View {
                     }
                     .id("button")
 
-                    if let lastRecordingURL {
+                    if recorder.saveToFile, let lastRecordingURL {
                         FileProxyView(url: lastRecordingURL)
                             .transition(.scale.combined(with: .opacity))
                     }
@@ -29,7 +29,7 @@ struct RecordingView: View {
             .animation(.smooth, value: recorder.isRecording)
             .animation(.smooth, value: lastRecordingURL)
             .onChange(of: recorder.isRecording) { _, newValue in
-                if !newValue { lastRecordingURL = recorder.fileURL }
+                if !newValue, recorder.saveToFile { lastRecordingURL = recorder.fileURL }
             }
         } header: {
             HStack {

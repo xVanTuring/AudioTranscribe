@@ -165,7 +165,8 @@ final class ProcessTap {
 @Observable
 final class ProcessTapRecorder {
 
-    let fileURL: URL
+    let fileURL: URL?
+    let saveToFile: Bool
     let process: AudioProcess
     private let queue = DispatchQueue(label: "ProcessTapRecorder", qos: .userInitiated)
     private let logger: Logger
@@ -175,11 +176,19 @@ final class ProcessTapRecorder {
 
     private(set) var isRecording = false
 
-    init(fileURL: URL, tap: ProcessTap) {
+    /// WebSocket streamer for live transcription.
+    var streamer: WebSocketStreamer?
+
+    @ObservationIgnored
+    private var resampler: AudioResampler?
+
+    init(fileURL: URL?, saveToFile: Bool, tap: ProcessTap) {
         self.process = tap.process
         self.fileURL = fileURL
+        self.saveToFile = saveToFile
         self._tap = tap
-        self.logger = Logger(subsystem: kAppSubsystem, category: "\(String(describing: ProcessTapRecorder.self))(\(fileURL.lastPathComponent))")
+        let logLabel = fileURL?.lastPathComponent ?? "no-file"
+        self.logger = Logger(subsystem: kAppSubsystem, category: "\(String(describing: ProcessTapRecorder.self))(\(logLabel))")
     }
 
     private var tap: ProcessTap {
@@ -215,23 +224,49 @@ final class ProcessTapRecorder {
 
         logger.info("Using audio format: \(format, privacy: .public)")
 
-        let settings: [String: Any] = [
-            AVFormatIDKey: streamDescription.mFormatID,
-            AVSampleRateKey: format.sampleRate,
-            AVNumberOfChannelsKey: format.channelCount
-        ]
-        let file = try AVAudioFile(forWriting: fileURL, settings: settings, commonFormat: .pcmFormatFloat32, interleaved: format.isInterleaved)
+        // Only create file when saveToFile is enabled
+        if saveToFile, let fileURL {
+            let settings: [String: Any] = [
+                AVFormatIDKey: streamDescription.mFormatID,
+                AVSampleRateKey: format.sampleRate,
+                AVNumberOfChannelsKey: format.channelCount
+            ]
+            let file = try AVAudioFile(forWriting: fileURL, settings: settings, commonFormat: .pcmFormatFloat32, interleaved: format.isInterleaved)
+            self.currentFile = file
+        }
 
-        self.currentFile = file
+        // Set up resampler and connect streamer for live transcription
+        if let streamer {
+            do {
+                self.resampler = try AudioResampler(sourceFormat: format)
+                streamer.connect(sampleRate: 16000)
+                logger.info("Live transcription streaming enabled")
+            } catch {
+                logger.error("Failed to create resampler: \(error, privacy: .public)")
+                self.resampler = nil
+            }
+        }
+
+        let resampler = self.resampler
+        let streamer = self.streamer
 
         try tap.run(on: queue) { [weak self] inNow, inInputData, inInputTime, outOutputData, inOutputTime in
-            guard let self, let currentFile = self.currentFile else { return }
+            guard let self else { return }
             do {
                 guard let buffer = AVAudioPCMBuffer(pcmFormat: format, bufferListNoCopy: inInputData, deallocator: nil) else {
                     throw "Failed to create PCM buffer"
                 }
 
-                try currentFile.write(from: buffer)
+                // Write to file if enabled
+                if let currentFile = self.currentFile {
+                    try currentFile.write(from: buffer)
+                }
+
+                // Stream to live-transcript server
+                if let resampler, let streamer, streamer.isConnected,
+                   let pcmData = resampler.convert(buffer) {
+                    streamer.sendAudio(pcmData)
+                }
             } catch {
                 logger.error("\(error, privacy: .public)")
             }
@@ -250,6 +285,8 @@ final class ProcessTapRecorder {
             guard isRecording else { return }
 
             currentFile = nil
+            streamer?.disconnect()
+            resampler = nil
 
             isRecording = false
 

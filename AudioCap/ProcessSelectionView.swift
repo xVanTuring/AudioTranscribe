@@ -5,8 +5,11 @@ struct ProcessSelectionView: View {
     @State private var processController = AudioProcessController()
     @State private var tap: ProcessTap?
     @State private var recorder: ProcessTapRecorder?
+    @State private var streamer = WebSocketStreamer()
 
     @State private var selectedProcess: AudioProcess?
+    @State private var transcriptEnabled = true
+    @State private var saveToFile = true
 
     var body: some View {
         Section {
@@ -48,6 +51,16 @@ struct ProcessSelectionView: View {
                 .font(.headline)
         }
 
+        Section {
+            Toggle("Save Audio File", isOn: $saveToFile)
+                .disabled(recorder?.isRecording == true)
+            Toggle("Live Transcript", isOn: $transcriptEnabled)
+                .disabled(recorder?.isRecording == true)
+        } header: {
+            Text("Options")
+                .font(.headline)
+        }
+
         if let tap {
             if let errorMessage = tap.errorMessage {
                 Text(errorMessage)
@@ -61,6 +74,10 @@ struct ProcessSelectionView: View {
                             createRecorder()
                         }
                     }
+
+                if transcriptEnabled {
+                    TranscriptView(streamer: streamer)
+                }
             }
         }
     }
@@ -76,10 +93,13 @@ struct ProcessSelectionView: View {
     private func createRecorder() {
         guard let tap else { return }
 
-        let filename = "\(tap.process.name)-\(Int(Date.now.timeIntervalSinceReferenceDate))"
-        let audioFileURL = URL.applicationSupport.appendingPathComponent(filename, conformingTo: .wav)
+        let audioFileURL: URL? = saveToFile ? {
+            let filename = "\(tap.process.name)-\(Int(Date.now.timeIntervalSinceReferenceDate))"
+            return URL.applicationSupport.appendingPathComponent(filename, conformingTo: .wav)
+        }() : nil
 
-        let newRecorder = ProcessTapRecorder(fileURL: audioFileURL, tap: tap)
+        let newRecorder = ProcessTapRecorder(fileURL: audioFileURL, saveToFile: saveToFile, tap: tap)
+        newRecorder.streamer = transcriptEnabled ? streamer : nil
         self.recorder = newRecorder
     }
 

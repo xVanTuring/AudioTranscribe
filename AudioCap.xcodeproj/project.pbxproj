@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000012CF0000000000001 /* WebSocketStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000042CF0000000000001 /* WebSocketStreamer.swift */; };
+		A10000022CF0000000000002 /* AudioResampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000052CF0000000000002 /* AudioResampler.swift */; };
+		A10000032CF0000000000003 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000062CF0000000000003 /* TranscriptView.swift */; };
 		F431728D2BF68C0C00D918A3 /* AudioRecordingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = F431728C2BF68C0C00D918A3 /* AudioRecordingPermission.swift */; };
 		F43172902BF6A92900D918A3 /* AudioProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F431728F2BF6A92900D918A3 /* AudioProcessController.swift */; };
 		F43172922BF6ABB000D918A3 /* ProcessSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43172912BF6ABB000D918A3 /* ProcessSelectionView.swift */; };
@@ -38,6 +41,9 @@
 		F47AD9452BF5B61F005B75AC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F47AD9482BF5B61F005B75AC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F47AD94A2BF5B61F005B75AC /* AudioCap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AudioCap.entitlements; sourceTree = "<group>"; };
+		A10000042CF0000000000001 /* WebSocketStreamer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketStreamer.swift; sourceTree = "<group>"; };
+		A10000052CF0000000000002 /* AudioResampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioResampler.swift; sourceTree = "<group>"; };
+		A10000062CF0000000000003 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +63,16 @@
 				F431729E2BF7BB0E00D918A3 /* Main.xcconfig */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		A10000072CF0000000000004 /* Transcript */ = {
+			isa = PBXGroup;
+			children = (
+				A10000042CF0000000000001 /* WebSocketStreamer.swift */,
+				A10000052CF0000000000002 /* AudioResampler.swift */,
+				A10000062CF0000000000003 /* TranscriptView.swift */,
+			);
+			path = Transcript;
 			sourceTree = "<group>";
 		};
 		F431729F2BF7BD4700D918A3 /* ProcessTap */ = {
@@ -91,6 +107,7 @@
 			children = (
 				F431729D2BF7BB0600D918A3 /* Config */,
 				F431729F2BF7BD4700D918A3 /* ProcessTap */,
+				A10000072CF0000000000004 /* Transcript */,
 				F47AD9412BF5B61E005B75AC /* AudioCapApp.swift */,
 				F47AD9432BF5B61E005B75AC /* RootView.swift */,
 				F43172912BF6ABB000D918A3 /* ProcessSelectionView.swift */,
@@ -193,6 +210,9 @@
 				F43172A12BF7BF1300D918A3 /* RecordingIndicator.swift in Sources */,
 				F43172962BF787C300D918A3 /* CoreAudioUtils.swift in Sources */,
 				F431729C2BF7B66A00D918A3 /* FileProxyView.swift in Sources */,
+				A10000012CF0000000000001 /* WebSocketStreamer.swift in Sources */,
+				A10000022CF0000000000002 /* AudioResampler.swift in Sources */,
+				A10000032CF0000000000003 /* TranscriptView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,7 +349,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"AudioCap/Preview Content\"";
-				DEVELOPMENT_TEAM = 8C7439RJLG;
+				DEVELOPMENT_TEAM = 36VG5URZ5V;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -355,7 +375,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"AudioCap/Preview Content\"";
-				DEVELOPMENT_TEAM = 8C7439RJLG;
+				DEVELOPMENT_TEAM = 36VG5URZ5V;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
