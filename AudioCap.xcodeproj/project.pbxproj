@@ -10,6 +10,8 @@
 		A10000012CF0000000000001 /* WebSocketStreamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000042CF0000000000001 /* WebSocketStreamer.swift */; };
 		A10000022CF0000000000002 /* AudioResampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000052CF0000000000002 /* AudioResampler.swift */; };
 		A10000032CF0000000000003 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000062CF0000000000003 /* TranscriptView.swift */; };
+		A10000082CF0000000000005 /* FloatingSubtitlePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000092CF0000000000005 /* FloatingSubtitlePanel.swift */; };
+		A1000000ACF0000000000006 /* FloatingSubtitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000BCF0000000000006 /* FloatingSubtitleView.swift */; };
 		F431728D2BF68C0C00D918A3 /* AudioRecordingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = F431728C2BF68C0C00D918A3 /* AudioRecordingPermission.swift */; };
 		F43172902BF6A92900D918A3 /* AudioProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F431728F2BF6A92900D918A3 /* AudioProcessController.swift */; };
 		F43172922BF6ABB000D918A3 /* ProcessSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43172912BF6ABB000D918A3 /* ProcessSelectionView.swift */; };
@@ -44,6 +46,8 @@
 		A10000042CF0000000000001 /* WebSocketStreamer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketStreamer.swift; sourceTree = "<group>"; };
 		A10000052CF0000000000002 /* AudioResampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioResampler.swift; sourceTree = "<group>"; };
 		A10000062CF0000000000003 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
+		A10000092CF0000000000005 /* FloatingSubtitlePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingSubtitlePanel.swift; sourceTree = "<group>"; };
+		A1000000BCF0000000000006 /* FloatingSubtitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingSubtitleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +75,8 @@
 				A10000042CF0000000000001 /* WebSocketStreamer.swift */,
 				A10000052CF0000000000002 /* AudioResampler.swift */,
 				A10000062CF0000000000003 /* TranscriptView.swift */,
+				A10000092CF0000000000005 /* FloatingSubtitlePanel.swift */,
+				A1000000BCF0000000000006 /* FloatingSubtitleView.swift */,
 			);
 			path = Transcript;
 			sourceTree = "<group>";
@@ -213,6 +219,8 @@
 				A10000012CF0000000000001 /* WebSocketStreamer.swift in Sources */,
 				A10000022CF0000000000002 /* AudioResampler.swift in Sources */,
 				A10000032CF0000000000003 /* TranscriptView.swift in Sources */,
+				A10000082CF0000000000005 /* FloatingSubtitlePanel.swift in Sources */,
+				A1000000ACF0000000000006 /* FloatingSubtitleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

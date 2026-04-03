@@ -9,7 +9,8 @@ struct ProcessSelectionView: View {
 
     @State private var selectedProcess: AudioProcess?
     @State private var transcriptEnabled = true
-    @State private var saveToFile = true
+    @State private var saveToFile = false
+    @State private var subtitlePanel: FloatingSubtitlePanel?
 
     var body: some View {
         Section {
@@ -77,6 +78,17 @@ struct ProcessSelectionView: View {
 
                 if transcriptEnabled {
                     TranscriptView(streamer: streamer)
+
+                    if recorder.isRecording && streamer.isConnected {
+                        Button {
+                            if subtitlePanel == nil {
+                                subtitlePanel = FloatingSubtitlePanel(streamer: streamer)
+                            }
+                            subtitlePanel?.show()
+                        } label: {
+                            Label("Floating Subtitle", systemImage: "text.bubble")
+                        }
+                    }
                 }
             }
         }
