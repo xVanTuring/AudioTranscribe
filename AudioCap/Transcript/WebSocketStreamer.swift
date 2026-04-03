@@ -21,6 +21,10 @@ final class WebSocketStreamer: @unchecked Sendable {
         let language: String?
         let code: String?
         let message: String?
+        // Latency metrics from server
+        let processing_ms: Double?
+        let correction_ms: Double?
+        let client_audio_ts: Double?  // server recv timestamp, for RTT calc
     }
 
     let serverURL: URL
@@ -32,6 +36,13 @@ final class WebSocketStreamer: @unchecked Sendable {
     private(set) var isConnected = false
     private(set) var segments: [Int: TranscriptSegment] = [:]
     private(set) var errorMessage: String?
+
+    // Latency stats
+    private(set) var lastProcessingMs: Double = 0
+    private(set) var lastCorrectionMs: Double = 0
+    private(set) var lastRoundTripMs: Double = 0
+    private var chunkSendTimestamps: [Int: CFAbsoluteTime] = [:]  // seq -> send time
+    private var audioChunkSeq = 0
 
     /// Ordered segments for display.
     var orderedSegments: [TranscriptSegment] {
@@ -115,6 +126,15 @@ final class WebSocketStreamer: @unchecked Sendable {
     /// Call this from the audio I/O callback (any thread).
     func sendAudio(_ data: Data) {
         guard let task = webSocketTask, isConnected else { return }
+        let sendTime = CFAbsoluteTimeGetCurrent()
+        audioChunkSeq += 1
+        let seq = audioChunkSeq
+        // Keep only recent timestamps to avoid memory growth
+        if seq % 100 == 0 {
+            let cutoff = seq - 200
+            chunkSendTimestamps = chunkSendTimestamps.filter { $0.key > cutoff }
+        }
+        chunkSendTimestamps[seq] = sendTime
         task.send(.data(data)) { [weak self] error in
             if let error {
                 self?.logger.error("Send audio error: \(error, privacy: .public)")
@@ -168,6 +188,14 @@ final class WebSocketStreamer: @unchecked Sendable {
     }
 
     private func applyEvent(_ event: TranscriptEvent) {
+        // Update latency metrics
+        if let pms = event.processing_ms {
+            lastProcessingMs = pms
+        }
+        if let cms = event.correction_ms {
+            lastCorrectionMs = cms
+        }
+
         switch event.type {
         case "ready":
             logger.info("Server ready")
@@ -181,6 +209,7 @@ final class WebSocketStreamer: @unchecked Sendable {
                 isFinal: false,
                 language: event.language ?? ""
             )
+            logLatency(event: event, type: event.type)
 
         case "final":
             guard let segID = event.segment_id, let text = event.text else { return }
@@ -190,6 +219,7 @@ final class WebSocketStreamer: @unchecked Sendable {
                 isFinal: true,
                 language: event.language ?? ""
             )
+            logLatency(event: event, type: "final")
 
         case "error":
             let msg = "\(event.code ?? "ERROR"): \(event.message ?? "Unknown error")"
@@ -198,6 +228,25 @@ final class WebSocketStreamer: @unchecked Sendable {
 
         default:
             break
+        }
+    }
+
+    private func logLatency(event: TranscriptEvent, type: String) {
+        let recvTime = CFAbsoluteTimeGetCurrent()
+        // Estimate RTT: use the most recent chunk send time as approximation
+        // (The server echoes its recv timestamp as client_audio_ts, but since
+        // clocks differ, we use the last send time for local RTT estimation)
+        if let lastSendSeq = chunkSendTimestamps.keys.max(),
+           let sendTime = chunkSendTimestamps[lastSendSeq] {
+            let rttMs = (recvTime - sendTime) * 1000
+            lastRoundTripMs = rttMs
+            logger.info(
+                "[\(type, privacy: .public)] processing=\(event.processing_ms ?? 0, privacy: .public)ms correction=\(event.correction_ms ?? 0, privacy: .public)ms rtt≈\(String(format: "%.1f", rttMs), privacy: .public)ms text=\(event.text ?? "", privacy: .public)"
+            )
+        } else {
+            logger.info(
+                "[\(type, privacy: .public)] processing=\(event.processing_ms ?? 0, privacy: .public)ms text=\(event.text ?? "", privacy: .public)"
+            )
         }
     }
 

@@ -24,6 +24,19 @@ struct TranscriptView: View {
                 }
                 .frame(minHeight: 60, maxHeight: 200)
             }
+
+            // Latency indicators
+            if streamer.isConnected && streamer.lastRoundTripMs > 0 {
+                HStack(spacing: 12) {
+                    latencyBadge("ASR", ms: streamer.lastProcessingMs)
+                    if streamer.lastCorrectionMs > 0 {
+                        latencyBadge("2nd", ms: streamer.lastCorrectionMs)
+                    }
+                    latencyBadge("RTT", ms: streamer.lastRoundTripMs)
+                }
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.secondary)
+            }
         } header: {
             HStack {
                 Image(systemName: streamer.isConnected ? "waveform.circle.fill" : "waveform.circle")
@@ -31,6 +44,14 @@ struct TranscriptView: View {
                 Text("Live Transcript")
                     .font(.headline)
             }
+        }
+    }
+
+    private func latencyBadge(_ label: String, ms: Double) -> some View {
+        let color: Color = ms < 50 ? .green : ms < 150 ? .yellow : .red
+        return HStack(spacing: 2) {
+            Circle().fill(color).frame(width: 6, height: 6)
+            Text("\(label): \(String(format: "%.0f", ms))ms")
         }
     }
 
