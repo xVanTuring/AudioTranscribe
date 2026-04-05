@@ -41,6 +41,7 @@ final class WebSocketStreamer: @unchecked Sendable {
     private(set) var lastProcessingMs: Double = 0
     private(set) var lastCorrectionMs: Double = 0
     private(set) var lastRoundTripMs: Double = 0
+    private let timestampLock = NSLock()
     private var chunkSendTimestamps: [Int: CFAbsoluteTime] = [:]  // seq -> send time
     private var audioChunkSeq = 0
 
@@ -127,6 +128,7 @@ final class WebSocketStreamer: @unchecked Sendable {
     func sendAudio(_ data: Data) {
         guard let task = webSocketTask, isConnected else { return }
         let sendTime = CFAbsoluteTimeGetCurrent()
+        timestampLock.lock()
         audioChunkSeq += 1
         let seq = audioChunkSeq
         // Keep only recent timestamps to avoid memory growth
@@ -135,6 +137,7 @@ final class WebSocketStreamer: @unchecked Sendable {
             chunkSendTimestamps = chunkSendTimestamps.filter { $0.key > cutoff }
         }
         chunkSendTimestamps[seq] = sendTime
+        timestampLock.unlock()
         task.send(.data(data)) { [weak self] error in
             if let error {
                 self?.logger.error("Send audio error: \(error, privacy: .public)")
@@ -236,8 +239,10 @@ final class WebSocketStreamer: @unchecked Sendable {
         // Estimate RTT: use the most recent chunk send time as approximation
         // (The server echoes its recv timestamp as client_audio_ts, but since
         // clocks differ, we use the last send time for local RTT estimation)
-        if let lastSendSeq = chunkSendTimestamps.keys.max(),
-           let sendTime = chunkSendTimestamps[lastSendSeq] {
+        timestampLock.lock()
+        let lastSendTime: CFAbsoluteTime? = chunkSendTimestamps.keys.max().flatMap { chunkSendTimestamps[$0] }
+        timestampLock.unlock()
+        if let sendTime = lastSendTime {
             let rttMs = (recvTime - sendTime) * 1000
             lastRoundTripMs = rttMs
             logger.info(
